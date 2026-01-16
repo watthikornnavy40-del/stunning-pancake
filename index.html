@@ -1,298 +1,303 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
-import { Sparkles, Music, MapPin, ChevronRight, X, Info, BookOpen, User } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { Sparkles, Music, MapPin, ChevronRight, X, BookOpen, User, Info } from 'lucide-react';
 
+// Data for all 4 regions with detailed descriptions
 const regionsData = [
   {
     id: 0,
     name: 'ภาคเหนือ',
     subtitle: 'ความอ่อนช้อยแห่งล้านนา',
-    desc: 'นาฏศิลป์ภาคเหนือมักมีจังหวะช้า นุ่มนวล สะท้อนถึงวิถีชีวิตที่สงบสุขและอากาศที่หนาวเย็น',
+    desc: 'นาฏศิลป์ที่มีความนุ่มนวล อ่อนช้อย จังหวะช้า สะท้อนวิถีชีวิตที่สงบงาม',
     details: {
-      history: 'ได้รับอิทธิพลจากศิลปะพม่าและไทใหญ่ ผสมผสานกับวัฒนธรรมล้านนาดั้งเดิม',
+      history: 'ศิลปะล้านนาที่ได้รับอิทธิพลจากพม่าและไทใหญ่ มีความประณีตสูง',
       performances: [
-        { name: 'ฟ้อนเล็บ', detail: 'การฟ้อนที่สวมเล็บยาวสีทอง ส่ายมืออ่อนช้อย' },
-        { name: 'ฟ้อนเทียน', detail: 'ฟ้อนกลางคืนโดยถือเทียนจุดไฟในมือทั้งสองข้าง' },
-        { name: 'ฟ้อนสาวไหม', detail: 'เลียนแบบท่าทางจากการปลูกหม่อนเลี้ยงไหม' }
+        { name: 'ฟ้อนเล็บ', detail: 'สวมเล็บยาวสีทอง ฟ้อนรำด้วยจังหวะช้าเนิบนาบ' },
+        { name: 'ฟ้อนเทียน', detail: 'การแสดงยามค่ำคืนที่ใช้แสงเทียนประกอบท่ารำ' },
+        { name: 'ฟ้อนสาวไหม', detail: 'เลียนแบบท่าทางจากการปั่นฝ้ายและทอผ้า' }
       ],
       instruments: 'สะล้อ, ซอ, ซึง, กลองสะบัดชัย',
-      dress: 'นุ่งผ้าซิ่นตีนจก สวมเสื้อแขนกระบอก ห่มสไบทับ เกล้าผมมวยทัดดอกไม้'
+      dress: 'ผ้าซิ่นตีนจก เสื้อแขนกระบอก ห่มสไบ มวยผมทัดดอกไม้'
     },
-    color: '#A855F7',
+    color: '#A855F7', // Purple
     icon: '✨',
-    bg: 'https://images.unsplash.com/photo-1598948123446-422bc3d1326c?auto=format&fit=crop&q=80&w=1000'
+    bgGradient: 'from-purple-900/40'
   },
   {
     id: 1,
     name: 'ภาคกลาง',
-    subtitle: 'ความสนุกสนานแห่งลุ่มน้ำ',
-    desc: 'สะท้อนวิถีชีวิตเกษตรกรรมและความรื่นเริง ท่ารำมักจะมีความเป็นระเบียบและประณีต',
+    subtitle: 'ความสนุกแห่งลุ่มแม่น้ำ',
+    desc: 'เน้นความรื่นเริงและท่วงท่าที่ประณีต มีแบบแผนชัดเจนตามราชสำนัก',
     details: {
-      history: 'เป็นศูนย์กลางของกรุงศรีอยุธยาและรัตนโกสินทร์ จึงมีแบบแผนที่เคร่งครัดและวิจิตร',
+      history: 'เป็นศูนย์กลางการเมืองและวัฒนธรรม ท่ารำจึงมีมาตรฐานเป็นแบบแผน',
       performances: [
-        { name: 'รำวงมาตรฐาน', detail: 'ท่ารำที่เป็นแบบแผนชัดเจน 10 ท่ามาตรฐาน' },
-        { name: 'เต้นกำรำเคียว', detail: 'สะท้อนวิถีชีวิตการเก็บเกี่ยวข้าว' },
-        { name: 'ระบำชาวนา', detail: 'แสดงถึงความพร้อมเพรียงในการทำนา' }
+        { name: 'รำวงมาตรฐาน', detail: 'พัฒนาจากรำโทน มีท่ารำมาตรฐาน 10 ท่า' },
+        { name: 'เต้นกำรำเคียว', detail: 'สะท้อนความสนุกหลังฤดูเก็บเกี่ยวข้าว' },
+        { name: 'ระบำชาวนา', detail: 'การร่ายรำที่สื่อถึงขั้นตอนการทำนา' }
       ],
       instruments: 'ระนาดเอก, ฆ้องวงใหญ่, ตะโพน, ฉิ่ง',
-      dress: 'นุ่งโจงกระเบน สวมเสื้อแขนกระบอกหรือสไบ ชายสวมเสื้อราชปะแตน'
+      dress: 'นุ่งโจงกระเบน สวมเสื้อแขนกระบอกหรือห่มสไบ'
     },
-    color: '#F59E0B',
+    color: '#F59E0B', // Amber
     icon: '🌾',
-    bg: 'https://images.unsplash.com/photo-1528154291023-a6525fabe5b4?auto=format&fit=crop&q=80&w=1000'
+    bgGradient: 'from-amber-900/40'
   },
   {
     id: 2,
     name: 'ภาคอีสาน',
     subtitle: 'ความเร้าใจแห่งที่ราบสูง',
-    desc: 'เน้นจังหวะที่รวดเร็ว กระฉับกระเฉง และความสนุกสุดเหวี่ยง มักเกี่ยวข้องกับพิธีกรรม',
+    desc: 'จังหวะรวดเร็ว กระฉับกระเฉง สนุกสนาน ผูกพันกับพิธีกรรมและความเชื่อ',
     details: {
-      history: 'สะท้อนความเชื่อเรื่องแถน (เทวดา) และพญานาค ผูกพันกับการขอฝนและเกษตรกรรม',
+      history: 'เน้นความรื่นเริงเพื่อผ่อนคลายจากการทำงานและพิธีขอฝนพญาแถน',
       performances: [
-        { name: 'เซิ้งบั้งไฟ', detail: 'ใช้ในงานประเพณีเพื่อบูชาพญาแถนขอฝน' },
-        { name: 'ฟ้อนภูไท', detail: 'ลีลาเฉพาะตัวของชาวผู้ไทย มีความสวยงามและแข็งแรง' },
-        { name: 'เซิ้งสวิง', detail: 'เลียนแบบท่าทางการหาปลาด้วยสวิง' }
+        { name: 'เซิ้งบั้งไฟ', detail: 'การร่ายรำเพื่อเฉลิมฉลองการจุดบั้งไฟขอฝน' },
+        { name: 'ฟ้อนภูไท', detail: 'ลีลาเฉพาะตัวของชาวผู้ไทย สวยงามและแข็งแรง' },
+        { name: 'เซิ้งสวิง', detail: 'เลียนแบบท่าทางการหาปลาอย่างร่าเริง' }
       ],
       instruments: 'แคน, โปงลาง, พิณ, กลองยาว',
-      dress: 'ผ้าฝ้าย/ผ้าไหมมัดหมี่ ผู้หญิงนุ่งผ้าถุงสั้นเหนือเข่า ใส่เสื้อแขนกุด'
+      dress: 'ผ้าไหมมัดหมี่ เสื้อแขนกุด นุ่งผ้าถุงสั้น'
     },
-    color: '#EF4444',
+    color: '#EF4444', // Red
     icon: '🥁',
-    bg: 'https://images.unsplash.com/photo-1527838832700-5059252407fa?auto=format&fit=crop&q=80&w=1000'
+    bgGradient: 'from-red-900/40'
   },
   {
     id: 3,
     name: 'ภาคใต้',
-    subtitle: 'ความแข็งแกร่งแห่งคาบสมุทร',
-    desc: 'โดดเด่นด้วยการเคลื่อนไหวที่ว่องไว แม่นยำ และทรงพลัง สื่อถึงความเข้มแข็งของชาวใต้',
+    subtitle: 'ความแข็งแกร่งแห่งทะเล',
+    desc: 'การเคลื่อนไหวที่ว่องไว แม่นยำ ทรงพลัง เน้นการใช้มือและเท้า',
     details: {
-      history: 'ได้รับอิทธิพลจากวัฒนธรรมมลายูและอินเดีย เน้นการสื่อความหมายผ่านนิ้วมือ',
+      history: 'ได้รับอิทธิพลจากวัฒนธรรมมลายู ท่ารำมีความนิ่งแต่เฉียบคม',
       performances: [
-        { name: 'มโนราห์ (โนรา)', detail: 'การรำที่ดัดตัวและนิ้วมืออย่างวิจิตรบรรจง' },
-        { name: 'หนังตะลุง', detail: 'การเล่าเรื่องผ่านตัวหนังเงียบหลังจอผ้าขาว' },
-        { name: 'รองเง็ง', detail: 'การเต้นรำพื้นเมืองที่ได้รับอิทธิพลจากมลายู' }
+        { name: 'โนรา', detail: 'ศิลปะชั้นสูงที่ใช้การทรงตัวและดัดนิ้วอย่างวิจิตร' },
+        { name: 'หนังตะลุง', detail: 'การแสดงเงาเล่าเรื่องราวผ่านตัวหนัง' },
+        { name: 'รองเง็ง', detail: 'การเต้นรำที่ผสมผสานอิทธิพลตะวันตกและพื้นเมือง' }
       ],
-      instruments: 'ทับ (กลองโนรา), โหม่ง, ฉิ่ง, ปี่คู่',
-      dress: 'ชุดโนราร้อยลูกปัดเป็นลวดลาย สวมเทริด (ชฎา) รองเง็งนุ่งบาติก'
+      instruments: 'ทับ (กลองโนรา), โหม่ง, ปี่คู่, ฉิ่ง',
+      dress: 'ชุดโนราร้อยลูกปัดหลากสี สวมเทริดบนศีรษะ'
     },
-    color: '#0EA5E9',
+    color: '#0EA5E9', // Sky Blue
     icon: '🌊',
-    bg: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&q=80&w=1000'
+    bgGradient: 'from-blue-900/40'
   }
 ];
 
-const App = () => {
+export default function App() {
   const [index, setIndex] = useState(0);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  
+  // Motion values for smooth wheel rotation
   const dragRotation = useMotionValue(0);
-  const smoothRotation = useSpring(dragRotation, { stiffness: 200, damping: 25 });
+  const smoothRotation = useSpring(dragRotation, { stiffness: 150, damping: 20 });
   
   const activeRegion = regionsData[index];
 
+  // Function to handle snapping after drag
   const handleDragEnd = (_, info) => {
     const currentRotation = dragRotation.get();
     const newIndex = Math.round(currentRotation / -90) % 4;
     const normalizedIndex = (newIndex < 0 ? newIndex + 4 : newIndex) % 4;
     
+    // Snap to the closest 90 degree point
     const snapTarget = Math.round(currentRotation / 90) * 90;
     dragRotation.set(snapTarget);
     setIndex(normalizedIndex);
   };
 
-  const rotateTo = (idx) => {
-    dragRotation.set(idx * -90);
-    setIndex(idx);
+  const jumpTo = (i) => {
+    dragRotation.set(i * -90);
+    setIndex(i);
   };
 
   return (
-    <div className="min-h-screen bg-[#050507] text-white font-sans overflow-hidden">
-      {/* Background Image with Overlay */}
-      <AnimatePresence mode='wait'>
-        <motion.div 
-          key={activeRegion.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.2 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-0 bg-cover bg-center transition-all duration-1000"
-          style={{ backgroundImage: `url(${activeRegion.bg})` }}
-        />
-      </AnimatePresence>
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-[#050507]/80 via-transparent to-[#050507]" />
-
-      {/* Main UI */}
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <header className="p-8 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center font-black text-xl shadow-[0_0_20px_rgba(255,255,255,0.3)]">🇹🇭</div>
-            <h1 className="text-2xl font-black tracking-widest uppercase">Thai Artistry</h1>
+    <div className="min-h-screen bg-[#020203] text-white font-sans overflow-hidden">
+      {/* Dynamic Background Glow */}
+      <div 
+        className={`fixed inset-0 z-0 bg-gradient-to-br ${activeRegion.bgGradient} to-transparent transition-all duration-1000 opacity-30`} 
+      />
+      
+      {/* Header */}
+      <nav className="relative z-50 p-6 lg:p-10 flex justify-between items-center backdrop-blur-sm border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-red-500 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20">
+            <Sparkles size={20} />
           </div>
-          <button className="p-3 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-            <Info size={24} />
-          </button>
-        </header>
+          <span className="text-xl font-black tracking-tighter uppercase italic">Thai Heritage</span>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full text-xs font-bold tracking-widest uppercase hover:bg-white/10 transition-all border border-white/10">
+          <Info size={14} /> เกี่ยวกับโครงการ
+        </button>
+      </nav>
 
-        <div className="flex-1 flex flex-col lg:flex-row items-center justify-center px-8 gap-20">
-          {/* Draggable Wheel Section */}
-          <div className="relative w-[340px] h-[340px] lg:w-[550px] lg:h-[550px] flex items-center justify-center">
-             {/* Center Glow */}
-             <div 
-                className="absolute w-40 h-40 rounded-full blur-[80px] transition-colors duration-700"
-                style={{ backgroundColor: activeRegion.color }}
-             />
-             
-             <motion.div
-              drag="rotate"
-              style={{ rotate: smoothRotation }}
-              onDragEnd={handleDragEnd}
-              className="relative w-full h-full rounded-full border border-white/10 flex items-center justify-center cursor-grab active:cursor-grabbing z-10"
-             >
-                {regionsData.map((reg, i) => (
-                  <div
-                    key={reg.id}
-                    className="absolute"
-                    style={{ transform: `rotate(${i * 90}deg) translateY(-240px) rotate(-${i * 90}deg)` }}
-                  >
-                    <button 
-                      onClick={() => rotateTo(i)}
-                      className={`transition-all duration-500 flex flex-col items-center ${index === i ? 'scale-125' : 'opacity-30 scale-90 grayscale'}`}
-                    >
-                      <div className="w-16 h-16 lg:w-24 lg:h-24 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/20 flex items-center justify-center text-4xl shadow-2xl">
-                        {reg.icon}
-                      </div>
-                      <span className="mt-3 text-[10px] font-bold tracking-[0.3em] uppercase">{reg.name}</span>
-                    </button>
-                  </div>
-                ))}
-                
-                {/* Decorative Circles */}
-                <div className="absolute inset-10 rounded-full border border-white/5 pointer-events-none" />
-                <div className="absolute inset-20 rounded-full border border-dashed border-white/10 animate-[spin_100s_linear_infinite] pointer-events-none" />
-             </motion.div>
-          </div>
+      {/* Hero Section */}
+      <main className="relative z-10 container mx-auto px-6 pt-12 lg:pt-20 flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24 min-h-[80vh]">
+        
+        {/* Interactive Wheel (The Centerpiece) */}
+        <div className="relative w-72 h-72 lg:w-[500px] lg:h-[500px] flex items-center justify-center">
+          {/* Active Glow behind wheel */}
+          <div 
+            className="absolute w-48 h-48 lg:w-80 lg:h-80 rounded-full blur-[100px] transition-colors duration-1000"
+            style={{ backgroundColor: activeRegion.color + '44' }}
+          />
 
-          {/* Info Section */}
-          <div className="max-w-xl text-center lg:text-left z-20">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.5 }}
+          <motion.div
+            drag="rotate"
+            style={{ rotate: smoothRotation }}
+            onDragEnd={handleDragEnd}
+            className="relative w-full h-full rounded-full border border-white/10 flex items-center justify-center cursor-grab active:cursor-grabbing z-10"
+          >
+            {regionsData.map((reg, i) => (
+              <div
+                key={reg.id}
+                className="absolute"
+                style={{ transform: `rotate(${i * 90}deg) translateY(-180px) rotate(-${i * 90}deg)` }}
+                // Scale based on if large screen or small
               >
-                <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
-                  <MapPin size={16} style={{ color: activeRegion.color }} />
-                  <span className="text-sm font-bold tracking-widest text-white/40 uppercase">ประเทศไทย</span>
+                <div style={{ transform: `translateY(${window.innerWidth < 1024 ? '-40px' : '-80px'})` }}>
+                  <button
+                    onClick={() => jumpTo(i)}
+                    className={`transition-all duration-500 ${index === i ? 'scale-150 opacity-100' : 'opacity-30 scale-90 grayscale'}`}
+                  >
+                    <div 
+                      className="w-16 h-16 lg:w-24 lg:h-24 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/20 flex items-center justify-center text-3xl lg:text-5xl shadow-2xl"
+                      style={{ boxShadow: index === i ? `0 0 30px ${activeRegion.color}44` : 'none' }}
+                    >
+                      {reg.icon}
+                    </div>
+                  </button>
                 </div>
-                <h2 className="text-7xl lg:text-9xl font-black mb-4 tracking-tighter leading-none">
-                  {activeRegion.name}
-                </h2>
-                <p className="text-xl lg:text-2xl font-light text-white/80 mb-8 leading-relaxed">
-                  {activeRegion.desc}
-                </p>
-                <button 
-                  onClick={() => setIsDetailOpen(true)}
-                  className="group relative inline-flex items-center gap-4 bg-white text-black px-10 py-5 rounded-full font-bold text-lg overflow-hidden hover:pr-12 transition-all active:scale-95 shadow-xl"
-                >
-                  สำรวจการแสดง <ChevronRight className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+              </div>
+            ))}
+            
+            {/* Inner Decorative Elements */}
+            <div className="absolute inset-12 lg:inset-20 rounded-full border border-white/5 pointer-events-none" />
+            <div className="absolute inset-24 lg:inset-40 rounded-full border border-dashed border-white/10 animate-[spin_40s_linear_infinite] pointer-events-none" />
+          </motion.div>
         </div>
 
-        <footer className="p-12 text-center text-white/20 text-xs tracking-widest uppercase">
-          เลื่อนวงล้อเพื่อเปลี่ยนภูมิภาค • Thai Culture Digital Archive 2026
-        </footer>
-      </div>
+        {/* Dynamic Content Display */}
+        <div className="flex-1 text-center lg:text-left">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.4 }}
+              className="flex flex-col items-center lg:items-start"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin size={16} className="text-red-500" />
+                <span className="text-xs font-bold tracking-[0.4em] uppercase text-white/40">นาฏศิลป์พื้นเมือง</span>
+              </div>
+              <h2 className="text-6xl lg:text-9xl font-black mb-2 tracking-tighter italic leading-none">
+                {activeRegion.name}
+              </h2>
+              <p className="text-xl lg:text-2xl font-medium text-white/50 mb-8 italic">
+                "{activeRegion.subtitle}"
+              </p>
+              <p className="text-lg text-white/70 max-w-md mb-10 leading-relaxed font-light">
+                {activeRegion.desc}
+              </p>
+              
+              <button 
+                onClick={() => setIsDetailOpen(true)}
+                className="group relative px-10 py-5 bg-white text-black font-black text-lg rounded-full overflow-hidden hover:pr-14 transition-all active:scale-95 shadow-2xl"
+              >
+                <span className="relative z-10 flex items-center gap-3">
+                  สำรวจข้อมูลเจาะลึก <ChevronRight className="group-hover:translate-x-2 transition-transform" />
+                </span>
+              </button>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
 
-      {/* Full Detail Overlay */}
+      {/* Bottom Hint */}
+      <footer className="p-10 text-center opacity-30">
+        <p className="text-[10px] uppercase tracking-[0.5em]">เลื่อนเพื่อเปลี่ยนภาค • Scroll or Drag to explore</p>
+      </footer>
+
+      {/* Detailed Modal (Overlay) */}
       <AnimatePresence>
         {isDetailOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl overflow-y-auto p-6 md:p-20"
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-3xl overflow-y-auto p-6 lg:p-24"
           >
             <button 
               onClick={() => setIsDetailOpen(false)}
-              className="fixed top-10 right-10 p-4 bg-white/10 rounded-full hover:bg-white/20 transition-all z-[110]"
+              className="fixed top-8 right-8 p-4 bg-white/10 hover:bg-white text-white hover:text-black rounded-full transition-all z-[110]"
             >
-              <X size={32} />
+              <X size={24} />
             </button>
 
-            <div className="max-w-4xl mx-auto space-y-20 pt-10">
-              <div className="text-center space-y-4">
-                <motion.span 
-                  initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                  className="inline-block px-4 py-1 rounded-full border border-white/20 text-xs tracking-[0.5em] uppercase"
-                  style={{ color: activeRegion.color }}
-                >
-                  {activeRegion.subtitle}
-                </motion.span>
-                <motion.h3 
-                  initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}
-                  className="text-6xl md:text-8xl font-black"
-                >
-                  {activeRegion.name}
-                </motion.h3>
+            <div className="max-w-5xl mx-auto space-y-24 py-10">
+              <div className="space-y-4 text-center">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-6xl mb-4">{activeRegion.icon}</motion.div>
+                <h3 className="text-7xl lg:text-9xl font-black italic">{activeRegion.name}</h3>
+                <p className="text-2xl text-white/40">{activeRegion.subtitle}</p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-12">
-                <section className="space-y-6">
-                  <div className="flex items-center gap-3 text-white/40 uppercase tracking-widest text-sm font-bold border-b border-white/10 pb-2">
-                    <BookOpen size={18} /> ประวัติความเป็นมา
-                  </div>
-                  <p className="text-xl text-white/70 leading-relaxed font-light">
-                    {activeRegion.details.history}
-                  </p>
-                </section>
-
-                <section className="space-y-6">
-                  <div className="flex items-center gap-3 text-white/40 uppercase tracking-widest text-sm font-bold border-b border-white/10 pb-2">
-                    <Music size={18} /> ดนตรีและเครื่องแต่งกาย
-                  </div>
+              <div className="grid lg:grid-cols-2 gap-16">
+                <div className="space-y-10">
                   <div className="space-y-4">
-                    <div>
-                      <span className="text-white/30 text-xs uppercase block mb-1">เครื่องดนตรีหลัก</span>
-                      <p className="text-lg font-medium">{activeRegion.details.instruments}</p>
-                    </div>
-                    <div>
-                      <span className="text-white/30 text-xs uppercase block mb-1">การแต่งกาย</span>
-                      <p className="text-lg font-medium">{activeRegion.details.dress}</p>
+                    <h4 className="flex items-center gap-2 text-sm font-bold tracking-widest text-white/30 uppercase border-b border-white/10 pb-2">
+                      <BookOpen size={16} /> ประวัติและที่มา
+                    </h4>
+                    <p className="text-xl text-white/80 leading-relaxed font-light italic">
+                      {activeRegion.details.history}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="flex items-center gap-2 text-sm font-bold tracking-widest text-white/30 uppercase border-b border-white/10 pb-2">
+                      <Music size={16} /> ดนตรีและเครื่องแต่งกาย
+                    </h4>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <span className="text-[10px] uppercase text-white/30 block mb-1">วงดนตรี</span>
+                        <p className="font-bold text-sm lg:text-base">{activeRegion.details.instruments}</p>
+                      </div>
+                      <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <span className="text-[10px] uppercase text-white/30 block mb-1">การแต่งกาย</span>
+                        <p className="font-bold text-sm lg:text-base">{activeRegion.details.dress}</p>
+                      </div>
                     </div>
                   </div>
-                </section>
+                </div>
+
+                <div className="space-y-8">
+                  <h4 className="flex items-center gap-2 text-sm font-bold tracking-widest text-white/30 uppercase border-b border-white/10 pb-2">
+                    <User size={16} /> การแสดงที่โดดเด่น
+                  </h4>
+                  <div className="space-y-4">
+                    {activeRegion.details.performances.map((perf, i) => (
+                      <motion.div 
+                        key={i}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="p-6 bg-gradient-to-r from-white/5 to-transparent rounded-3xl border border-white/10"
+                      >
+                        <h5 className="text-xl font-black text-yellow-500 mb-1">{perf.name}</h5>
+                        <p className="text-sm text-white/50 leading-relaxed">{perf.detail}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
               </div>
-
-              <section className="space-y-8">
-                <div className="flex items-center gap-3 text-white/40 uppercase tracking-widest text-sm font-bold border-b border-white/10 pb-2">
-                  <User size={18} /> การแสดงที่โดดเด่น
-                </div>
-                <div className="grid md:grid-cols-3 gap-6">
-                  {activeRegion.details.performances.map((perf, i) => (
-                    <motion.div 
-                      key={i}
-                      whileHover={{ y: -5 }}
-                      className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-white/20 transition-all"
-                    >
-                      <h4 className="text-xl font-bold mb-2 text-yellow-500">{perf.name}</h4>
-                      <p className="text-sm text-white/60 leading-relaxed">{perf.detail}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </section>
-
-              <div className="h-40" /> {/* Spacer */}
+              
+              <div className="text-center pb-20">
+                <p className="text-white/20 text-xs">ศิลปะนาฏศิลป์ไทยคือความภูมิใจของชาติ</p>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
-};
+}
 
-export default App;
-
-	
