@@ -3,215 +3,393 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thai Arts Heritage - Interactive Experience</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;0,900;1,900&display=swap" rel="stylesheet">
+    <title>Thai Heritage - นาฏศิลป์ไทย 4 ภาค</title>
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #020205; color: white; margin: 0; overflow: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .wheel-container { perspective: 1000px; }
-        /* สำหรับซ่อน Scrollbar */
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        :root {
+            --primary: #FFD700;
+            --bg: #050508;
+            --card: rgba(255, 255, 255, 0.05);
+            --transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Ambient Background Glow */
+        #glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.2;
+            transition: background-color 1s, transform 2s ease-in-out;
+            pointer-events: none;
+        }
+
+        header {
+            width: 100%;
+            padding: 25px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            z-index: 50;
+        }
+
+        .main-container {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .display-text {
+            text-align: center;
+            min-height: 120px;
+        }
+
+        .display-text h2 {
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+            opacity: 0.4;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .display-text h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            font-weight: 900;
+            font-style: italic;
+            letter-spacing: -2px;
+            transition: color 0.4s ease;
+        }
+
+        /* Interactive Wheel UI */
+        .wheel-ui {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wheel-rim {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            box-shadow: inset 0 0 50px rgba(255,255,255,0.02);
+        }
+
+        .wheel-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .sector {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -35px;
+            margin-left: -35px;
+            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .icon-btn {
+            width: 70px;
+            height: 70px;
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            user-select: none;
+        }
+
+        .icon-btn.active {
+            background: white;
+            color: black;
+            transform: scale(1.15);
+            box-shadow: 0 0 40px rgba(255,255,255,0.3);
+            border: none;
+        }
+
+        /* Bottom Controls */
+        .controls {
+            width: 100%;
+            text-align: center;
+        }
+
+        .explore-btn {
+            width: 100%;
+            padding: 20px;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 24px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            transition: var(--transition);
+        }
+
+        .explore-btn:hover {
+            transform: translateY(-3px);
+            background-color: var(--primary);
+        }
+
+        .explore-btn:active {
+            transform: translateY(2px) scale(0.98);
+        }
+
+        /* Detail Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 40px 25px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .close-circle {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.04);
+            padding: 25px;
+            border-radius: 28px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .info-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.75rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .info-card p {
+            margin: 0;
+            line-height: 1.7;
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 400px) {
+            .wheel-ui { width: 260px; height: 260px; }
+            .display-text h1 { font-size: 2.8rem; }
+            .sector { margin-top: -30px; margin-left: -30px; }
+            .icon-btn { width: 60px; height: 60px; font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const { motion, AnimatePresence } = window.Motion;
+    <div id="glow"></div>
 
-        const regions = [
+    <header>
+        <div style="font-weight: 900; letter-spacing: 3px; font-size: 0.7rem; opacity: 0.6;">THAI CULTURAL INTERACTIVE</div>
+    </header>
+
+    <main class="main-container">
+        <div class="display-text">
+            <h2 id="region-name">ภาคเหนือ</h2>
+            <h1 id="dance-name">ฟ้อนเล็บ</h1>
+        </div>
+
+        <div class="wheel-ui">
+            <div class="wheel-rim"></div>
+            <div class="wheel-inner" id="wheel-inner">
+                <!-- North -->
+                <div class="sector" style="transform: rotate(0deg) translateY(-115px) rotate(0deg);">
+                    <div class="icon-btn active" onclick="changeRegion(0)">✨</div>
+                </div>
+                <!-- Central -->
+                <div class="sector" style="transform: rotate(90deg) translateY(-115px) rotate(-90deg);">
+                    <div class="icon-btn" onclick="changeRegion(1)">🌾</div>
+                </div>
+                <!-- Northeast -->
+                <div class="sector" style="transform: rotate(180deg) translateY(-115px) rotate(-180deg);">
+                    <div class="icon-btn" onclick="changeRegion(2)">🥁</div>
+                </div>
+                <!-- South -->
+                <div class="sector" style="transform: rotate(270deg) translateY(-115px) rotate(-270deg);">
+                    <div class="icon-btn" onclick="changeRegion(3)">🌊</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <p style="font-size: 0.7rem; opacity: 0.3; margin-bottom: 25px; letter-spacing: 1px;">แตะไอคอนเพื่อหมุนเลือกภูมิภาค</p>
+            <button class="explore-btn" onclick="toggleModal(true)">สำรวจข้อมูล</button>
+        </div>
+    </main>
+
+    <!-- Modal Detail -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-header">
+            <h2 id="modal-region" style="font-size: 2.5rem; margin: 0; font-style: italic; font-weight: 900;">ภาคเหนือ</h2>
+            <div class="close-circle" onclick="toggleModal(false)">✕</div>
+        </div>
+        
+        <div class="info-card">
+            <h3>ประวัติและที่มา</h3>
+            <p id="modal-desc"></p>
+        </div>
+
+        <div class="info-card">
+            <h3>เอกลักษณ์การร่ายรำ</h3>
+            <p id="modal-style"></p>
+        </div>
+
+        <div class="info-card" style="background: rgba(255,255,255,0.08);">
+            <h3>เครื่องดนตรีที่ใช้</h3>
+            <p id="modal-music" style="font-weight: bold; color: white;"></p>
+        </div>
+    </div>
+
+    <script>
+        const data = [
             {
-                id: 0, name: 'ภาคเหนือ', icon: '✨', color: '#A855F7',
-                subtitle: 'ความอ่อนช้อยแห่งล้านนา',
-                desc: 'นาฏศิลป์ที่เน้นความนุ่มนวล อ่อนช้อย จังหวะช้า สะท้อนวิถีชีวิตที่สงบงามของชาวเหนือ',
-                details: {
-                    history: 'ศิลปะล้านนาที่มีความประณีตสูง ได้รับอิทธิพลจากวัฒนธรรมพื้นเมืองและประเทศเพื่อนบ้าน',
-                    instruments: 'สะล้อ, ซอ, ซึง, กลองสะบัดชัย',
-                    dress: 'นุ่งผ้าซิ่นตีนจก เสื้อแขนกระบอก ห่มสไบ มวยผมทัดดอกไม้',
-                    performances: ['ฟ้อนเล็บ', 'ฟ้อนเทียน', 'ฟ้อนสาวไหม']
-                }
+                region: 'ภาคเหนือ',
+                dance: 'ฟ้อนเล็บ',
+                color: '#A855F7',
+                desc: 'นาฏศิลป์ล้านนาที่สง่างาม มักใช้แสดงในวาระสำคัญเพื่อต้อนรับแขกบ้านแขกเมือง หรือในงานบุญประเพณีต่างๆ ของทางเหนือ',
+                style: 'ผู้รำจะสวมเล็บยาวสีทอง ท่วงท่ารำมีความอ่อนช้อย เนิบนาบ และสงบงาม สื่อถึงวิถีชีวิตชาวเหนือที่ใจเย็นและประณีต',
+                music: 'สะล้อ, ซอ, ซึง, กลองสะบัดชัย'
             },
             {
-                id: 1, name: 'ภาคกลาง', icon: '🌾', color: '#F59E0B',
-                subtitle: 'ความสนุกแห่งลุ่มแม่น้ำ',
-                desc: 'เน้นความรื่นเริงและท่วงท่าที่ประณีต มีแบบแผนชัดเจนตามลักษณะของภาคกลาง',
-                details: {
-                    history: 'เป็นศูนย์กลางทางวัฒนธรรมที่มีแบบแผนชัดเจน ผสมผสานวิถีชีวิตชาวนาและความอ่อนช้อย',
-                    instruments: 'ระนาดเอก, ฆ้องวงใหญ่, ตะโพน, ฉิ่ง',
-                    dress: 'นุ่งโจงกระเบน สวมเสื้อแขนกระบอกหรือห่มสไบ',
-                    performances: ['รำวงมาตรฐาน', 'เต้นกำรำเคียว', 'ระบำชาวนา']
-                }
+                region: 'ภาคกลาง',
+                dance: 'รำวงมาตรฐาน',
+                color: '#F59E0B',
+                desc: 'ศิลปะการรำที่เกิดจากการปรับปรุง "รำโทน" ให้มีแบบแผนที่เป็นมาตรฐานสากล สื่อถึงความรื่นเริงและการเข้าสังคมของชาวไทย',
+                style: 'เน้นความเรียบร้อย สุภาพ มีท่ารำที่กำหนดไว้อย่างชัดเจน 10 ท่ามาตรฐาน มักแสดงเป็นคู่ชาย-หญิง',
+                music: 'วงปี่พาทย์ไม้นวม, วงปี่พาทย์เครื่องคู่'
             },
             {
-                id: 2, name: 'ภาคอีสาน', icon: '🥁', color: '#EF4444',
-                subtitle: 'ความเร้าใจแห่งที่ราบสูง',
-                desc: 'จังหวะรวดเร็ว กระฉับกระเฉง สนุกสนาน ผูกพันกับพิธีกรรมและความเชื่อท้องถิ่น',
-                details: {
-                    history: 'เน้นความรื่นเริงและการเฉลิมฉลอง เพื่อผ่อนคลายจากการทำงานและพิธีขอฝน',
-                    instruments: 'แคน, โปงลาง, พิณ, กลองยาว',
-                    dress: 'ผ้าไหมมัดหมี่ เสื้อแขนกุด นุ่งผ้าถุงสั้น',
-                    performances: ['เซิ้งบั้งไฟ', 'ฟ้อนภูไท', 'เซิ้งสวิง']
-                }
+                region: 'ภาคอีสาน',
+                dance: 'เซิ้งบั้งไฟ',
+                color: '#EF4444',
+                desc: 'การแสดงที่เต็มไปด้วยพลังและความสนุกสนาน ผูกพันกับพิธีกรรม "บุญบั้งไฟ" เพื่อบูชาพญาแถนให้ฝนตกตามฤดูกาล',
+                style: 'จังหวะดนตรีรวดเร็ว ท่ารำมีลักษณะกระฉับกระเฉง สนุกเร้าใจ สะท้อนถึงความขยันขันแข็งของชาวอีสาน',
+                music: 'แคน, พิณ, โปงลาง, กลองยาว'
             },
             {
-                id: 3, name: 'ภาคใต้', icon: '🌊', color: '#0EA5E9',
-                subtitle: 'ความแข็งแกร่งแห่งทะเล',
-                desc: 'การเคลื่อนไหวที่ว่องไว แม่นยำ ทรงพลัง เน้นการใช้มือและเท้าที่เฉียบคม',
-                details: {
-                    history: 'ได้รับอิทธิพลจากวัฒนธรรมมลายู ท่ารำมีความนิ่งแต่แฝงด้วยความแข็งแรง',
-                    instruments: 'ทับ (กลองโนรา), โหม่ง, ปี่คู่, ฉิ่ง',
-                    dress: 'ชุดโนราร้อยลูกปัดหลากสี สวมเทริดบนศีรษะ',
-                    performances: ['มโนราห์', 'หนังตะลุง', 'รองเง็ง']
-                }
+                region: 'ภาคใต้',
+                dance: 'มโนราห์',
+                color: '#0EA5E9',
+                desc: 'ศิลปะการแสดงที่เก่าแก่และศักดิ์สิทธิ์ของชาวใต้ ได้รับการยกย่องจาก UNESCO ให้เป็นมรดกโลกทางวัฒนธรรม',
+                style: 'เน้นความแข็งแรง เฉียบคม การดัดปลายนิ้วมือที่อ่อนช้อยอย่างประหลาด และการทรงตัวที่ยอดเยี่ยม',
+                music: 'ทับ (กลองโนรา), โหม่ง, ปี่คู่, ฉิ่ง'
             }
         ];
 
-        const App = () => {
-            const [index, setIndex] = useState(0);
-            const [isDetailOpen, setIsDetailOpen] = useState(false);
-            const activeRegion = regions[index];
+        let activeIdx = 0;
 
-            return (
-                <div className="relative w-screen h-screen overflow-hidden flex flex-col items-center">
-                    {/* Background Glow */}
-                    <div 
-                        className="absolute inset-0 transition-colors duration-1000 opacity-20 pointer-events-none" 
-                        style={{ background: `radial-gradient(circle at center, ${activeRegion.color} 0%, transparent 70%)` }}
-                    />
+        function changeRegion(idx) {
+            activeIdx = idx;
+            const regionData = data[idx];
+            
+            // Text Updates
+            document.getElementById('dance-name').innerText = regionData.dance;
+            document.getElementById('dance-name').style.color = regionData.color;
+            document.getElementById('region-name').innerText = regionData.region;
+            
+            // Glow Effect
+            const glow = document.getElementById('glow');
+            glow.style.backgroundColor = regionData.color;
+            glow.style.transform = `translate(${Math.sin(idx) * 50}px, ${Math.cos(idx) * 50}px)`;
 
-                    {/* Header */}
-                    <header className="relative z-50 w-full p-6 flex justify-between items-center glass">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-red-600 rounded-lg flex items-center justify-center font-bold">🇹🇭</div>
-                            <h1 className="text-lg font-black tracking-tighter uppercase italic">Thai Arts Hub</h1>
-                        </div>
-                        <div className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Interactive Archive</div>
-                    </header>
+            // Wheel Rotation
+            const wheelInner = document.getElementById('wheel-inner');
+            wheelInner.style.transform = `rotate(${-idx * 90}deg)`;
 
-                    {/* Main Content */}
-                    <main className="relative z-10 flex-1 w-full flex flex-col items-center justify-around py-8">
-                        
-                        {/* Title Section */}
-                        <div className="text-center h-28">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    className="px-6"
-                                >
-                                    <h2 className="text-6xl md:text-8xl font-black italic uppercase leading-none" style={{ color: activeRegion.color }}>
-                                        {activeRegion.name}
-                                    </h2>
-                                    <p className="mt-2 text-xs md:text-sm font-bold text-white/40 tracking-[0.3em] uppercase">{activeRegion.subtitle}</p>
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
+            // Icon State
+            const icons = document.querySelectorAll('.icon-btn');
+            icons.forEach((btn, i) => {
+                const isActive = i === idx;
+                btn.classList.toggle('active', isActive);
+                
+                // Keep icons upright while wheel rotates
+                const sector = btn.parentElement;
+                sector.style.transform = `rotate(${i * 90}deg) translateY(-115px) rotate(${(idx * 90) - (i * 90)}deg)`;
+            });
+        }
 
-                        {/* Visual Wheel (Simplified for Direct Browser View) */}
-                        <div className="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center">
-                            <div className="absolute inset-0 rounded-full border border-white/10 animate-pulse" />
-                            
-                            <div className="relative w-full h-full flex items-center justify-center">
-                                {regions.map((reg, i) => {
-                                    const isActive = index === i;
-                                    return (
-                                        <button
-                                            key={reg.id}
-                                            onClick={() => setIndex(i)}
-                                            className="absolute transition-all duration-700 flex flex-col items-center"
-                                            style={{
-                                                transform: `rotate(${i * 90}deg) translateY(-110px) rotate(-${i * 90}deg)`
-                                            }}
-                                        >
-                                            <div 
-                                                className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center text-3xl transition-all duration-500 glass ${isActive ? 'scale-125 border-white/50 shadow-2xl' : 'opacity-20 scale-75 grayscale'}`}
-                                                style={{ boxShadow: isActive ? `0 0 30px ${reg.color}55` : 'none' }}
-                                            >
-                                                {reg.icon}
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            
-                            {/* Center Point */}
-                            <div className="absolute w-4 h-4 rounded-full bg-white shadow-lg z-20" />
-                        </div>
+        function toggleModal(show) {
+            const modal = document.getElementById('modal');
+            const regionData = data[activeIdx];
+            
+            if (show) {
+                document.getElementById('modal-region').innerText = regionData.region;
+                document.getElementById('modal-region').style.color = regionData.color;
+                document.getElementById('modal-desc').innerText = regionData.desc;
+                document.getElementById('modal-style').innerText = regionData.style;
+                document.getElementById('modal-music').innerText = regionData.music;
+                modal.style.display = 'flex';
+            } else {
+                modal.style.display = 'none';
+            }
+        }
 
-                        {/* Action Area */}
-                        <div className="flex flex-col items-center gap-6 w-full px-10 max-w-sm">
-                            <p className="text-[10px] text-white/30 tracking-[0.4em] uppercase">แตะไอคอนเพื่อเลือกภูมิภาค</p>
-                            <button 
-                                onClick={() => setIsDetailOpen(true)}
-                                className="w-full py-4 bg-white text-black font-black rounded-2xl flex items-center justify-center gap-3 hover:bg-yellow-400 transition-all active:scale-95 shadow-xl uppercase tracking-tighter"
-                            >
-                                ดูข้อมูลเชิงลึก ➜
-                            </button>
-                        </div>
-                    </main>
-
-                    {/* Detail Modal */}
-                    <AnimatePresence>
-                        {isDetailOpen && (
-                            <motion.div
-                                initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                className="fixed inset-0 z-[100] bg-[#050508] p-6 overflow-y-auto"
-                            >
-                                <div className="max-w-xl mx-auto space-y-12 pt-4 pb-20">
-                                    <div className="flex justify-between items-center sticky top-0 bg-[#050508]/90 backdrop-blur-md py-4 z-10 border-b border-white/10">
-                                        <h3 className="text-4xl font-black italic uppercase leading-none" style={{ color: activeRegion.color }}>{activeRegion.name}</h3>
-                                        <button onClick={() => setIsDetailOpen(false)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full font-bold">✕</button>
-                                    </div>
-
-                                    <div className="space-y-8">
-                                        <div className="p-6 glass rounded-3xl space-y-3">
-                                            <h4 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">📜 ประวัติและความเป็นมา</h4>
-                                            <p className="text-lg text-white/80 leading-relaxed font-light">{activeRegion.details.history}</p>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <div className="p-6 glass rounded-3xl">
-                                                <h4 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2">🎻 วงดนตรี</h4>
-                                                <p className="font-bold text-white/90">{activeRegion.details.instruments}</p>
-                                            </div>
-                                            <div className="p-6 glass rounded-3xl">
-                                                <h4 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2">👗 การแต่งกาย</h4>
-                                                <p className="font-bold text-white/90">{activeRegion.details.dress}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <h4 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">🎭 การแสดงยอดนิยม</h4>
-                                            <div className="grid gap-3">
-                                                {activeRegion.details.performances.map((p, i) => (
-                                                    <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between group">
-                                                        <span className="text-white font-bold">{p}</span>
-                                                        <span className="text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity">★</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-center text-white/20 text-[10px] py-10">© 2026 Thai Heritage Digital Experience</div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Initialize first region
+        window.onload = () => changeRegion(0);
     </script>
 </body>
 </html>
