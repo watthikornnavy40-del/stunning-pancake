@@ -2,427 +2,232 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>นาฏศิลป์ไทย 4 ภาค | Interactive Experience</title>
-    <!-- เพิ่ม Font ให้ดูทันสมัย -->
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;900&display=swap" rel="stylesheet">
-    <!-- Confetti Library สำหรับเอฟเฟกต์ -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เรียนรู้ HTML ด้วยการควบคุมผ่านท่าทาง</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --p-north: #a855f7;
-            --p-central: #f59e0b;
-            --p-east: #ef4444;
-            --p-south: #0ea5e9;
-            --bg: #020205;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            font-family: 'Kanit', sans-serif;
-        }
-
         body {
-            margin: 0;
-            background-color: var(--bg);
-            color: white;
-            height: 100vh;
+            font-family: 'Kanit', sans-serif;
+            scroll-behavior: smooth;
+            background: #0f172a;
+            color: #f8fafc;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #video-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 160px;
+            height: 120px;
+            border-radius: 12px;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* เอฟเฟกต์แสง Background หรูๆ */
-        .ambient-light {
-            position: fixed;
-            width: 60vw;
-            height: 60vw;
-            border-radius: 50%;
-            filter: blur(120px);
-            z-index: -1;
-            opacity: 0.15;
-            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: none;
-        }
-
-        header {
-            padding: 20px;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            border: 2px solid #3b82f6;
             z-index: 100;
+            transform: scaleX(-1);
         }
-
-        .logo {
-            font-weight: 900;
-            letter-spacing: 4px;
-            font-size: 0.75rem;
-            color: #ffd700;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        .gesture-indicator {
+            position: fixed;
+            bottom: 150px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #3b82f6;
+            color: white;
+            font-size: 0.8rem;
+            z-index: 101;
+            display: none;
         }
-
-        .main-stage {
-            flex: 1;
+        .section-card {
+            min-height: 80vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: space-around;
-            padding: 20px;
-            position: relative;
-        }
-
-        .title-group {
-            text-align: center;
-            transform: translateY(10px);
-        }
-
-        #region-tag {
-            font-size: 0.8rem;
-            letter-spacing: 6px;
-            opacity: 0.5;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        #dance-name {
-            font-size: clamp(2.5rem, 10vw, 4rem);
-            margin: 0;
-            font-weight: 900;
-            font-style: italic;
-            line-height: 0.9;
-            transition: color 0.5s;
-        }
-
-        /* ส่วนของ Wheel ที่อัปเกรดใหม่ */
-        .wheel-wrap {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            display: flex;
-            align-items: center;
             justify-content: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease-out;
         }
-
-        .outer-ring {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 1px dashed var(--border);
-            border-radius: 50%;
-            animation: spin 20s linear infinite;
-        }
-
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .wheel-core {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .region-node {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            margin: -35px 0 0 -35px;
-            transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .node-btn {
-            width: 70px;
-            height: 70px;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-        }
-
-        .node-btn.active {
-            background: white;
-            color: black;
-            transform: scale(1.2);
-            box-shadow: 0 0 40px rgba(255,255,255,0.2);
-            border-color: transparent;
-        }
-
-        /* ปุ่มกด Explore แบบมี Effect */
-        .action-area {
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
-        }
-
-        .explore-trigger {
-            width: 100%;
-            padding: 22px;
-            background: white;
-            color: black;
-            border: none;
-            border-radius: 28px;
-            font-weight: 900;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .explore-trigger:active {
-            transform: scale(0.96) translateY(4px);
-        }
-
-        /* Modal ดีไซน์ Glassmorphism */
-        .sheet-overlay {
-            position: fixed;
-            bottom: -100%;
-            left: 0;
-            width: 100%;
-            height: 85vh;
-            background: rgba(10, 10, 15, 0.95);
-            backdrop-filter: blur(30px);
-            z-index: 1000;
-            border-radius: 40px 40px 0 0;
-            transition: bottom 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 40px 25px;
-            overflow-y: auto;
-            border-top: 1px solid var(--border);
-        }
-
-        .sheet-overlay.open { bottom: 0; }
-
-        .sheet-handle {
-            width: 50px;
-            height: 5px;
-            background: var(--border);
-            border-radius: 10px;
-            margin: -20px auto 30px;
-        }
-
-        .info-block {
-            background: var(--glass);
-            padding: 25px;
-            border-radius: 30px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border);
-        }
-
-        .info-block h4 {
-            margin: 0 0 10px 0;
-            font-size: 0.7rem;
-            color: #ffd700;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-        }
-
-        .info-block p {
-            margin: 0;
-            line-height: 1.6;
-            opacity: 0.8;
-            font-weight: 300;
-        }
-
-        .close-sheet {
-            position: absolute;
-            top: 25px;
-            right: 25px;
-            width: 40px;
-            height: 40px;
-            background: var(--glass);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-weight: bold;
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
-<body>
+<body class="overflow-x-hidden">
 
-    <div class="ambient-light" id="l1" style="top: -10%; left: -10%;"></div>
-    <div class="ambient-light" id="l2" style="bottom: -10%; right: -10%;"></div>
+    <!-- Gesture Control UI -->
+    <div id="video-container">
+        <video id="webcam" class="w-full h-full object-cover" autoplay playsinline></video>
+    </div>
+    <div id="status" class="gesture-indicator">กำลังตรวจจับมือ...</div>
 
-    <header>
-        <div class="logo">THAI HERITAGE ARCHIVE</div>
-    </header>
-
-    <main class="main-stage">
-        <div class="title-group">
-            <span id="region-tag">ภาคเหนือ</span>
-            <h1 id="dance-name">ฟ้อนเล็บ</h1>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass py-4 px-8 flex justify-between items-center">
+        <div class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+            HTML Magic
         </div>
+        <div class="hidden md:flex gap-6 text-sm">
+            <a href="#intro" class="hover:text-blue-400 transition">Introduction</a>
+            <a href="#structure" class="hover:text-blue-400 transition">Structure</a>
+            <a href="#tags" class="hover:text-blue-400 transition">Common Tags</a>
+        </div>
+    </nav>
 
-        <div class="wheel-wrap">
-            <div class="outer-ring"></div>
-            <div class="wheel-core" id="wheel">
-                <!-- North -->
-                <div class="region-node" style="transform: rotate(0deg) translateY(-110px) rotate(0deg);">
-                    <div class="node-btn active" onclick="switchRegion(0)">🏔️</div>
-                </div>
-                <!-- Central -->
-                <div class="region-node" style="transform: rotate(90deg) translateY(-110px) rotate(-90deg);">
-                    <div class="node-btn" onclick="switchRegion(1)">🌾</div>
-                </div>
-                <!-- East -->
-                <div class="region-node" style="transform: rotate(180deg) translateY(-110px) rotate(-180deg);">
-                    <div class="node-btn" onclick="switchRegion(2)">🥁</div>
-                </div>
-                <!-- South -->
-                <div class="region-node" style="transform: rotate(270deg) translateY(-110px) rotate(-270deg);">
-                    <div class="node-btn" onclick="switchRegion(3)">🌊</div>
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 pt-24 pb-20">
+        
+        <!-- Intro Section -->
+        <section id="intro" class="section-card">
+            <div class="max-w-3xl">
+                <span class="text-blue-400 font-semibold tracking-widest uppercase text-sm">Welcome</span>
+                <h1 class="text-5xl md:text-7xl font-bold mt-4 mb-6 leading-tight">
+                    HTML คือโครงสร้างของ <span class="text-blue-500">โลกเว็บ</span>
+                </h1>
+                <p class="text-xl text-slate-400 leading-relaxed mb-8">
+                    HyperText Markup Language คือภาษาพื้นฐานที่ใช้สร้างหน้าเว็บไซต์ทั่วมุมโลก 
+                    ถ้าเปรียบเว็บไซต์เหมือนบ้าน HTML ก็คือ "โครงสร้างเหล็กและกำแพง" นั่นเอง
+                </p>
+                <div class="flex gap-4">
+                    <button class="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full font-medium transition">
+                        ลองเลื่อนลงด้วยมือของคุณ
+                    </button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="action-area">
-            <p style="font-size: 0.7rem; opacity: 0.3; margin-bottom: 25px; letter-spacing: 2px;">SELECT A REGION TO DISCOVER</p>
-            <button class="explore-trigger" onclick="openDetails()">
-                สำรวจข้อมูล <span style="font-size: 1.4rem;">➜</span>
-            </button>
-        </div>
+        <!-- Structure Section -->
+        <section id="structure" class="section-card">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="glass p-8 rounded-3xl">
+                    <pre class="text-sm text-emerald-400">
+<code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;ชื่อเว็บ&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;สวัสดีชาวโลก&lt;/h1&gt;
+    &lt;p&gt;นี่คือเนื้อหา...&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                </div>
+                <div>
+                    <h2 class="text-4xl font-bold mb-6">โครงสร้างมาตรฐาน</h2>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="bg-blue-500/20 text-blue-400 p-1 rounded">1</span>
+                            <p><strong class="text-white">HTML Tag:</strong> รากแก้วของเอกสารทั้งหมด</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="bg-blue-500/20 text-blue-400 p-1 rounded">2</span>
+                            <p><strong class="text-white">Head:</strong> ส่วนเก็บข้อมูลเบื้องหลัง เช่น ชื่อเว็บ และ CSS</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="bg-blue-500/20 text-blue-400 p-1 rounded">3</span>
+                            <p><strong class="text-white">Body:</strong> ส่วนที่แสดงผลจริงให้ผู้ใช้งานเห็น</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Common Tags Section -->
+        <section id="tags" class="section-card">
+            <h2 class="text-4xl font-bold mb-12 text-center">Tags ที่ใช้บ่อย</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass p-6 rounded-2xl hover:bg-blue-500/10 transition group">
+                    <div class="text-3xl mb-4 group-hover:scale-110 transition-transform">📝</div>
+                    <h3 class="text-xl font-bold mb-2">&lt;h1&gt; ถึง &lt;h6&gt;</h3>
+                    <p class="text-slate-400">ใช้สำหรับหัวข้อข่าวหรือหัวเรื่องสำคัญ</p>
+                </div>
+                <div class="glass p-6 rounded-2xl hover:bg-blue-500/10 transition group">
+                    <div class="text-3xl mb-4 group-hover:scale-110 transition-transform">🖼️</div>
+                    <h3 class="text-xl font-bold mb-2">&lt;img&gt;</h3>
+                    <p class="text-slate-400">ใช้แสดงรูปภาพเพื่อเพิ่มความสวยงาม</p>
+                </div>
+                <div class="glass p-6 rounded-2xl hover:bg-blue-500/10 transition group">
+                    <div class="text-3xl mb-4 group-hover:scale-110 transition-transform">🔗</div>
+                    <h3 class="text-xl font-bold mb-2">&lt;a&gt;</h3>
+                    <p class="text-slate-400">การสร้าง Link เพื่อเชื่อมต่อไปยังหน้าอื่น</p>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Detail Sheet -->
-    <div id="detail-sheet" class="sheet-overlay">
-        <div class="sheet-handle"></div>
-        <div class="close-sheet" onclick="closeDetails()">✕</div>
-        
-        <h2 id="m-region" style="font-size: 2.5rem; margin: 0 0 30px 0; font-weight: 900; font-style: italic;"></h2>
-        
-        <div class="info-block">
-            <h4>📜 ประวัติศาสตร์ล้ำค่า</h4>
-            <p id="m-history"></p>
-        </div>
-
-        <div class="info-block">
-            <h6>🎭 ศิลปะการแสดง</h6>
-            <p id="m-dance"></p
-        </div>
-
-        <div class="info-block" style="background: rgba(255,255,255,0.08);">
-            <h4>🎶 เครื่องดนตรีหลัก</h4>
-            <p id="m-music" style="font-weight: 900; font-size: 1.1rem; color: white;"></p>
-        </div>
-        
-        <div style="text-align: center; padding: 40px 0; opacity: 0.2; font-size: 0.7rem; letter-spacing: 2px;">
-            DESIGNED FOR NETLIFY 2026
-        </div>
-    </div>
+    <footer class="text-center py-10 border-t border-white/5 text-slate-500">
+        <p>สร้างขึ้นเพื่อการเรียนรู้ HTML & AI Gesture Control</p>
+    </footer>
 
     <script>
-        const heritageData = [
-            {
-                region: 'ภาคเหนือ',
-                dance: 'ฟ้อนเล็บ',
-                color: '#a855f7',
-                history: 'นาฏศิลป์ล้านนาที่สืบทอดมาจากการร่ายรำในคุ้มหลวง สื่อถึงความอ่อนช้อยของสตรีชาวเหนือ มักใช้แสดงเพื่อต้อนรับแขกผู้มีเกียรติ',
-                details: 'เอกลักษณ์คือการสวมเล็บยาวสีทองที่ปลายนิ้ว ท่วงท่าเนิบนาบแต่แฝงด้วยความสง่างามตามแบบฉบับล้านนา วงท่าการรำ',
-                music: 'สะล้อ, ซอ, ซึง, กลองสะบัดชัย'
-            },
-            {
-                region: 'ภาคกลาง',
-                dance: 'รำวงมาตรฐาน',
-                color: '#f59e0b',
-                history: 'ศิลปะที่วิวัฒนาการมาจากรำโทนในสมัยก่อน ปรับเปลี่ยนให้มีความเป็นสากลและเป็นมาตรฐานเดียวกันทั่วประเทศ',
-                details: 'การแสดงที่เน้นความสุภาพ สนุกสนาน มีท่ารำที่เป็นเอกลักษณ์ 10 ท่า เช่น ท่าสอดสร้อยมาลา',
-                music: 'วงปี่พาทย์ไม้นวม, ฉิ่ง, กรับ, โทน'
-            },
-            {
-                region: 'ภาคอีสาน',
-                dance: 'เซิ้งบั้งไฟ',
-                color: '#ef4444',
-                history: 'พิธีกรรมที่ผูกพันกับความเชื่อเรื่องพญาแถน เป็นการรำเพื่อขอฝนให้ตกต้องตามฤดูกาลก่อนเริ่มฤดูทำนา',
-                details: 'ท่วงท่ารวดเร็ว กระฉับกระเฉง สนุกสนาน เร้าใจด้วยเสียงแคนและกลองยาว สะท้อนจิตวิญญาณชาวอีสาน',
-                music: 'แคน, พิณ, โปงลาง, กลองยาวอีสาน'
-            },
-            {
-                region: 'ภาคใต้',
-                dance: 'มโนราห์',
-                color: '#0ea5e9',
-                history: 'ศิลปะการแสดงที่เก่าแก่ที่สุดอย่างหนึ่งของไทย ได้รับการขึ้นทะเบียนเป็นมรดกโลกทางวัฒนธรรมจาก UNESCO',
-                details: 'โดดเด่นด้วยการดัดตัวและนิ้วมือที่วิจิตร การเคลื่อนไหวที่แข็งแรง เฉียบคม และการแต่งกายที่ใช้ลูกปัดหลากสี',
-                music: 'ทับ (กลองโนรา), โหม่ง, ปี่คู่, ฉิ่ง'
-            }
-        ];
+        // --- Intersection Observer for Scroll Animations ---
+        const observerOptions = { threshold: 0.2 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
 
-        let currentActive = 0;
+        document.querySelectorAll('.section-card').forEach(section => {
+            observer.observe(section);
+        });
 
-        function switchRegion(idx) {
-            currentActive = idx;
-            const item = heritageData[idx];
+        // --- Gesture Control Logic ---
+        const videoElement = document.getElementById('webcam');
+        const statusElement = document.getElementById('status');
+        let lastY = null;
+        let scrollSpeed = 2.5;
 
-            // 1. อัปเดตข้อความ
-            document.getElementById('dance-name').innerText = item.dance;
-            document.getElementById('dance-name').style.color = item.color;
-            document.getElementById('region-tag').innerText = item.region;
-
-            // 2. เอฟเฟกต์แสง Background
-            document.getElementById('l1').style.backgroundColor = item.color;
-            document.getElementById('l2').style.backgroundColor = item.color;
-
-            // 3. หมุนวงล้อ
-            const wheel = document.getElementById('wheel');
-            wheel.style.transform = `rotate(${-idx * 90}deg)`;
-
-            // 4. อัปเดตสถานะปุ่ม
-            const nodes = document.querySelectorAll('.node-btn');
-            nodes.forEach((btn, i) => {
-                const isActive = i === idx;
-                btn.classList.toggle('active', isActive);
+        function onResults(results) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                statusElement.style.display = 'block';
+                statusElement.innerText = "พบมือแล้ว: เลื่อนขึ้น-ลงเพื่อ Scroll";
                 
-                // แก้ไอคอนเอียง
-                btn.parentElement.style.transform = `rotate(${i * 90}deg) translateY(-110px) rotate(${(idx * 90) - (i * 90)}deg)`;
-            });
+                // ใช้จุดที่ 9 (โคนนิ้วกลาง) เป็นจุดอ้างอิง
+                const currentY = results.multiHandLandmarks[0][9].y;
 
-            // 5. เอฟเฟกต์ Confetti เล็กๆ เวลาเปลี่ยน
-            confetti({
-                particleCount: 40,
-                spread: 70,
-                origin: { y: 0.6 },
-                colors: [item.color, '#ffffff']
-            });
+                if (lastY !== null) {
+                    const deltaY = currentY - lastY;
+                    // เลื่อนหน้าจอตามระยะการขยับของมือ
+                    window.scrollBy(0, deltaY * window.innerHeight * scrollSpeed);
+                }
+                lastY = currentY;
+            } else {
+                statusElement.style.display = 'none';
+                lastY = null;
+            }
         }
 
-        function openDetails() {
-            const item = heritageData[currentActive];
-            document.getElementById('m-region').innerText = item.region;
-            document.getElementById('m-region').style.color = item.color;
-            document.getElementById('m-history').innerText = item.history;
-            document.getElementById('m-dance').innerText = item.details;
-            document.getElementById('m-music').innerText = item.music;
-            
-            document.getElementById('detail-sheet').classList.add('open');
-            
-            // เอฟเฟกต์พลุฉลองตอนเปิด
-            confetti({
-                particleCount: 100,
-                spread: 160,
-                origin: { y: 0.6 },
-                colors: [item.color, '#FFD700']
-            });
-        }
+        const hands = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
 
-        function closeDetails() {
-            document.getElementById('detail-sheet').classList.remove('open');
-        }
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
 
-        // เริ่มต้นแอป
-        window.onload = () => switchRegion(0);
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 640,
+            height: 480
+        });
+
+        camera.start();
     </script>
 </body>
 </html>
